@@ -28,19 +28,17 @@ package minhs2.exmetronome;
 import com.google.inject.Provides;
 import javax.inject.Inject;
 import net.runelite.api.Client;
+import net.runelite.api.Preferences;
 import net.runelite.api.SoundEffectID;
 import net.runelite.api.events.GameTick;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+
+import java.io.File;
 import java.net.URL;
 
-import java.io.IOException;
-import java.io.File;
-
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import src.main.java.com.adonax.audiocue.AudioCue;
 
 @PluginDescriptor(
@@ -73,11 +71,11 @@ public class ExMetronomePlugin extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
-		URL url = new File("bruh.wav").toURI().toURL();
+		URL url = new File("1tickflick.wav").toURI().toURL();
 		soundPlayer = AudioCue.makeStereoCue(url, 2);
 		soundPlayer.open();
 
-		url = new File("metro.wav").toURI().toURL();
+		url = new File("1tickflick.wav").toURI().toURL();
 		musicPlayer = AudioCue.makeStereoCue(url, 1);
 		musicPlayer.open();
 		musicPlayer.play(0);
@@ -107,22 +105,25 @@ public class ExMetronomePlugin extends Plugin
 			return;
 		}
 
-		if (++tickCounter % config.tickCount() == 0) {
+		if (++tickCounter % config.tickCount() == 0)
+		{
 			// As playSoundEffect only uses the volume argument when the in-game volume isn't muted, sound effect volume
 			// needs to be set to the value desired for ticks or tocks and afterwards reset to the previous value.
-			int previousVolume = client.getSoundEffectVolume();
+			Preferences preferences = client.getPreferences();
+			int previousVolume = preferences.getSoundEffectVolume();
 
-			if (shouldTock && config.tockVolume() > 0) {
-				client.setSoundEffectVolume(config.tockVolume());
+			if (shouldTock && config.tockVolume() > 0)
+			{
+				preferences.setSoundEffectVolume(config.tockVolume());
 				client.playSoundEffect(SoundEffectID.GE_DECREMENT_PLOP, config.tockVolume());
-
-
-			} else if (config.tickVolume() > 0) {
-				client.setSoundEffectVolume(config.tickVolume());
+			}
+			else if (config.tickVolume() > 0)
+			{
+				preferences.setSoundEffectVolume(config.tickVolume());
 				client.playSoundEffect(SoundEffectID.GE_INCREMENT_PLOP, config.tickVolume());
 			}
 
-			client.setSoundEffectVolume(previousVolume);
+			preferences.setSoundEffectVolume(previousVolume);
 
 			shouldTock = !shouldTock;
 		}
